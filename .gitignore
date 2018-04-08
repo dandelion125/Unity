@@ -8,3 +8,9 @@ examples/example_1/test1.out
 examples/example_1/test2.out
 examples/example_2/all_tests.out
 /*.user
+*.log
+*.idb
+*.obj
+*.pdb
+*.tlog
+*.lastbuildstate
