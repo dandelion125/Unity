@@ -38,5 +38,8 @@
     <ClInclude Include="extras\fixture\src\unity_fixture_malloc_overrides.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\unity_config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
