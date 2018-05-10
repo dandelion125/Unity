@@ -1,7 +1,7 @@
 /**
-* @file		UnityConfig.h
-* @section	Define Unity output macros so they'll print using the 
-*			SerialLog module from RuntimeLib
+* @file        UnityConfig.h
+* @section    Define Unity output macros so they'll print using the 
+*            SerialLog module from RuntimeLib
 */
 
 // EDK-II
@@ -34,16 +34,16 @@
 #define UNITY_POINTER_WIDTH 64
 
 // Define Unity output macros
-#define UNITY_OUTPUT_CHAR(a)	(VOID)AsciiPrint("%c", (a))
+#define UNITY_OUTPUT_CHAR(a)    (VOID)AsciiPrint("%c", (a))
 #define UNITY_OUTPUT_FLUSH()
 #define UNITY_OUTPUT_START()
 #define UNITY_OUTPUT_COMPLETE()
 
 #define UNITY_PRINT_EOL() \
-	do \
-	{ \
-		UNITY_OUTPUT_CHAR('\r'); \
-		UNITY_OUTPUT_CHAR('\n'); \
-	} while (0);
+    do \
+    { \
+        UNITY_OUTPUT_CHAR('\r'); \
+        UNITY_OUTPUT_CHAR('\n'); \
+    } while (0);
 
 #endif /* __UNITY_CONFIG_H__ */
