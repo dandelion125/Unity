@@ -7,9 +7,99 @@
 
 #include "unity_fixture.h"
 #include "unity_internals.h"
-#include <string.h>
 
 struct UNITY_FIXTURE_T UnityFixture;
+
+// We define these intrinsic functions ourselves to so we can remove the 
+// standard library dependency
+static void * __cdecl memcpy(
+    void* pvDst,
+    void const* pvSrc,
+    unsigned __int64 cbSize);
+
+static void * __cdecl memset(
+    void* pvDst,
+    int iValue,
+    unsigned __int64 cbSize);
+
+#pragma function(memcpy)
+#pragma function(memset)
+
+static void * __cdecl memcpy(void* pvDst,
+    void const* pvSrc,
+    unsigned __int64 cbSize)
+{
+    unsigned char *pcSrc = NULL;
+    unsigned char *pcDst = NULL;
+    unsigned __int64 *pqwSrc = (unsigned __int64 *)pvSrc;
+    unsigned __int64 *pqwDst = (unsigned __int64 *)pvDst;
+    unsigned __int64 i;
+
+    if ((NULL == pvDst)
+        || (NULL == pvSrc)
+        || (0 == cbSize))
+    {
+        // Invalid parameters
+        return NULL;
+    }
+
+    // Copy bytes in unsigned __int64 increments to make things a bit faster
+    for (i = 0; i < (cbSize / sizeof(unsigned __int64)); i++)
+    {
+        pqwDst[i] = pqwSrc[i];
+    }
+
+    // Copy the remaining bytes as regular chars
+    pcSrc = (unsigned char *)((unsigned __int64)pvSrc + i * sizeof(unsigned __int64));
+    pcDst = (unsigned char *)((unsigned __int64)pvDst + i * sizeof(unsigned __int64));
+    for (i = 0; i < (cbSize % sizeof(unsigned __int64)); i++)
+    {
+        pcDst[i] = pcSrc[i];
+    }
+
+    return pvDst;
+}
+
+static void * __cdecl memset(void* pvDst,
+    int iValue,
+    unsigned __int64 cbSize)
+{
+    unsigned char ucValue = (unsigned char)iValue;
+    unsigned char *pucDst = NULL;
+    unsigned __int64 *pqwDst = (unsigned __int64 *)pvDst;
+    unsigned __int64 qwValue = 0;
+    unsigned char *pucValue = (unsigned char *)&qwValue;
+    unsigned __int64 i = 0;
+
+    if ((NULL == pvDst)
+        || (0 == cbSize))
+    {
+        // Invalid parameters
+        return NULL;
+    }
+
+    // Build a unsigned __int64 with all bytes set to ucValue
+    for (i = 0; i < sizeof(qwValue); i++)
+    {
+        pucValue[i] = ucValue;
+    }
+
+    // Set bytes in unsigned __int64 increments to make things a bit faster
+    for (i = 0; i < (cbSize / sizeof(unsigned __int64)); i++)
+    {
+        pqwDst[i] = qwValue;
+    }
+
+    // Set the remaining bytes as regular chars
+    pucDst = (unsigned char *)((unsigned __int64)pvDst + i * sizeof(unsigned __int64));
+    for (i = 0; i < (cbSize % sizeof(unsigned __int64)); i++)
+    {
+        pucDst[i] = ucValue;
+    }
+
+    return pvDst;
+}
+
 
 /* If you decide to use the function pointer approach.
  * Build with -D UNITY_OUTPUT_CHAR=outputChar and include <stdio.h>
@@ -48,11 +138,35 @@ int UnityMain(int argc, const char* argv[], void (*runAllTests)(void))
     return (int)Unity.TestFailures;
 }
 
+// https://stackoverflow.com/questions/3557178/implementation-of-strstr-function?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 static int selected(const char* filter, const char* name)
 {
-    if (filter == 0)
+    char * substring = NULL;
+    int len = 0;
+    if (filter == NULL)
         return 1;
-    return strstr(name, filter) ? 1 : 0;
+
+    while (0 != filter[len]) {
+        len++;
+    }
+
+    const char *ref = filter;
+    while (*name && *ref)
+    {
+        if (*name++ == *ref)
+        {
+            ref++;
+        }
+        if (!*ref)
+        {
+            substring = (char *)(name - len);
+        }
+        if (len == (ref - filter))
+        {
+            ref = filter;
+        }
+    }
+    return (NULL != substring) ? 1 : 0;
 }
 
 static int testSelected(const char* test)
@@ -213,6 +327,23 @@ void* unity_malloc(size_t size)
     memcpy(&mem[size], end, sizeof(end));
 
     return (void*)mem;
+}
+
+// https://stackoverflow.com/questions/34873209/implementation-of-strcmp/34873406?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+int strcmp(const char *string1, const char *string2)
+{
+    for (int i = 0; ; i++)
+    {
+        if (string1[i] != string2[i])
+        {
+            return string1[i] < string2[i] ? -1 : 1;
+        }
+
+        if (string1[i] == '\0')
+        {
+            return 0;
+        }
+    }
 }
 
 static int isOverrun(void* mem)

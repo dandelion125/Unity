@@ -4,9 +4,12 @@
     [Released under MIT License. Please refer to license.txt for details]
 ============================================================================ */
 
+// edk2\StdLib\LibC\Main\errno.c:
+// This is required to keep VC++ happy if you use floating-point
+int _fltused = 1;
+
 #define UNITY_INCLUDE_SETUP_STUBS
 #include "unity.h"
-#include <stddef.h>
 
 /* If omitted from header, declare overrideable prototypes here so they're ready for use */
 #ifdef UNITY_OMIT_OUTPUT_CHAR_HEADER_DECLARATION

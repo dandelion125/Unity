@@ -8,8 +8,6 @@
 #ifndef UNITY_FIXTURE_MALLOC_OVERRIDES_H_
 #define UNITY_FIXTURE_MALLOC_OVERRIDES_H_
 
-#include <stddef.h>
-
 #ifdef UNITY_EXCLUDE_STDLIB_MALLOC
 /* Define this macro to remove the use of stdlib.h, malloc, and free.
  * Many embedded systems do not have a heap or malloc/free by default.
